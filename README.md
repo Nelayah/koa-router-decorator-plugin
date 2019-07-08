@@ -165,3 +165,14 @@ router.get(
 #### extension(default = '.js')
 
 匹配配置文件的拓展名
+
+不使用 `loadDecoratorRouter` 全局引用，也可以单个文件引用，示例如下：
+
+```javascript
+import 'path/to/controller.ts';
+import KoaDecoratorRouter from 'koa-router-decorator-plugin';
+
+app
+  .use(KoaDecoratorRouter.routes())
+  .use(KoaDecoratorRouter.allowedMethods());
+```
