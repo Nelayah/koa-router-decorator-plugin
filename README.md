@@ -42,7 +42,7 @@ export default class {
 
 在 `koa` 和 `koa-router` 中使用，
 
-```
+```typescript
 import * as Koa from 'koa';
 import * as KoaRouter from 'koa-router';
 import * as path from 'path';
