@@ -78,7 +78,15 @@ export const loadDecoratorRouter = ({dir, extension = '.js'}) => {
       cwd: dir,
       silent: true
     },
-    (_, files) => files.forEach(v => require(path.join(dir, v)))
+    (_, files) => {
+      files.forEach(v => {
+        try {
+          require(path.join(dir, v))
+        } catch (e) {
+          console.warn(e);
+        }
+      })
+    }
   );
 }
 
