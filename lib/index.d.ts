@@ -1,7 +1,7 @@
 import * as KoaRouter from 'koa-router';
 import * as Koa from 'koa';
 interface IRequestParams {
-    url?: string;
+    url?: string | string[];
     method?: string;
     middleware?: any[];
 }

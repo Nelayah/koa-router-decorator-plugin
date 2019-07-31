@@ -5,7 +5,7 @@ import * as path from 'path';
 import * as Koa from 'koa';
 
 interface IRequestParams {
-  url?: string;
+  url?: string | string[];
   method?: string;
   middleware?: any[];
 }
@@ -46,7 +46,7 @@ export const Controller = (params?: KoaRouter | any) => {
 
   if (!R.isNil(params['prototype'])) return decorator(params);
   if (!R.isNil(params) && !R.isEmpty(params)) executeDefaultFunc(router)(params);
- 
+
   return decorator;
 }
 
@@ -58,20 +58,23 @@ export const RequestMapping: IRequestMapping = ({
 }) => {
   return (_, __, descriptor) => {
     const fn = descriptor.value;
-    descriptor.value = router =>
-      router[method.toLocaleLowerCase()].apply(
-        router,
-        [
-          url,
-          ...middleware,
-          async (ctx, next) => await fn(ctx, next)
-        ]
-      );
+    descriptor.value = router => {
+      R.unless(Array.isArray, R.of)(url).forEach(v => {
+        router[method.toLocaleLowerCase()].apply(
+          router,
+          [
+            v,
+            ...middleware,
+            async (ctx, next) => await fn(ctx, next)
+          ]
+        );
+      });
+    }
   }
 }
 
 // 加载所有装饰路由
-export const loadDecoratorRouter = ({dir, extension = '.js'}) => {
+export const loadDecoratorRouter = ({ dir, extension = '.js' }) => {
   glob(
     `**/*${extension}`,
     {

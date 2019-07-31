@@ -13,13 +13,13 @@ npm i koa-router-decorator-plugin --save
 `controller/example01.ts` 文件配置如下：
 
 ```typescript
-import {Controller, RequestMapping} from 'koa-router-decorator-plugin';
+import { Controller, RequestMapping } from "koa-router-decorator-plugin";
 
 @Controller
 export default class {
-  @RequestMapping({method: 'GET', url: '/example01'})
+  @RequestMapping({ method: "GET", url: "/example01" })
   async example01(ctx) {
-    ctx.body = 'example01';
+    ctx.body = "example01";
   }
 }
 ```
@@ -29,13 +29,18 @@ export default class {
 `controller/example02.ts` 文件配置如下：
 
 ```typescript
-import {Controller, RequestMapping} from 'koa-router-decorator-plugin';
+import { Controller, RequestMapping } from "koa-router-decorator-plugin";
 
-@Controller({prefix: '/prefix'})
+@Controller({ prefix: "/prefix" })
 export default class {
-  @RequestMapping({method: 'GET', url: '/example02'})
-  async example01(ctx) {
-    ctx.body = 'example02';
+  @RequestMapping({ method: "GET", url: "/example02" })
+  async example01(ctx, _) {
+    ctx.body = "example02";
+  }
+
+  @RequestMapping({ method: "GET", url: ["/example03", "/example04"] })
+  async example02(ctx, _) {
+    ctx.body = "example03";
   }
 }
 ```
@@ -43,42 +48,46 @@ export default class {
 在 `koa` 和 `koa-router` 中使用，
 
 ```typescript
-import * as Koa from 'koa';
-import * as KoaRouter from 'koa-router';
-import * as path from 'path';
-import KoaDecoratorRouter, {loadDecoratorRouter} from 'koa-router-decorator-plugin';
+import * as Koa from "koa";
+import * as KoaRouter from "koa-router";
+import * as path from "path";
+import KoaDecoratorRouter, {
+  loadDecoratorRouter
+} from "koa-router-decorator-plugin";
 
 const app = new Koa();
 const router = new KoaRouter();
 
 // 1.加载配置 controller 文件
-loadDecoratorRouter({dir: path.join(__dirname, '/path/to/controller'), extension: '.ts'});
-
-router.get('/heartbeats', async (ctx, _) => {
-  ctx.body = 'success';
+loadDecoratorRouter({
+  dir: path.join(__dirname, "/path/to/controller"),
+  extension: ".ts"
 });
 
-app
-  .use(router.routes())
-  .use(router.allowedMethods());
+router.get("/heartbeats", async (ctx, _) => {
+  ctx.body = "success";
+});
+
+app.use(router.routes()).use(router.allowedMethods());
 
 // 2.app.use 使用已配置的路由
-app
-  .use(KoaDecoratorRouter.routes())
-  .use(KoaDecoratorRouter.allowedMethods());
+app.use(KoaDecoratorRouter.routes()).use(KoaDecoratorRouter.allowedMethods());
 
 app.listen(4000);
-
 ```
 
 输出结果：
 
 ```javascript
-http.get('http://localhost:4000/heartbeats'); // output: success
+http.get("http://localhost:4000/heartbeats"); // output: success
 
-http.get('http://localhost:4000/example01'); // output: example01
+http.get("http://localhost:4000/example01"); // output: example01
 
-http.get('http://localhost:4000/prefix/example02'); // output: example02
+http.get("http://localhost:4000/prefix/example02"); // output: example02
+
+http.get("http://localhost:4000/prefix/example03"); // output: example03
+
+http.get("http://localhost:4000/prefix/example04"); // output: example04
 ```
 
 ## API
@@ -94,7 +103,7 @@ Router `instance` 方法中多参数调用，需要以数组形式参入。
 例如，
 
 ```javascript
-router.url('user', { id: 3 }, { query: { limit: 1 } });
+router.url("user", { id: 3 }, { query: { limit: 1 } });
 ```
 
 可以这么配置，
@@ -103,7 +112,7 @@ router.url('user', { id: 3 }, { query: { limit: 1 } });
 @Controller({url: ['user', { id: 3 }, {query: { limit: 1 }}]});
 ```
 
-### @RequestMapping({method: string, url: string, middleware?: []})
+### @RequestMapping({method: string, url: string | string[], middleware?: []})
 
 #### method
 
@@ -111,7 +120,7 @@ koa router `HTTP METHOD` 值，支持大小写
 
 #### url
 
-koa router 中请求 url 配置
+koa router 中请求 url 配置，可传递 url 数组
 
 #### middleware
 
@@ -135,11 +144,12 @@ ctx => {
  console.log(ctx.user);
 }
 ```
+
 转化为 `koa-router` 配置,
 
 ```javascript
 router.get(
-  '/users/:id',
+  "/users/:id",
   (ctx, next) => {
     return User.findOne(ctx.params.id).then(function(user) {
       ctx.user = user;
@@ -169,10 +179,8 @@ router.get(
 不使用 `loadDecoratorRouter` 全局引用，也可以单个文件引用，示例如下：
 
 ```javascript
-import 'path/to/controller.ts';
-import KoaDecoratorRouter from 'koa-router-decorator-plugin';
+import "path/to/controller.ts";
+import KoaDecoratorRouter from "koa-router-decorator-plugin";
 
-app
-  .use(KoaDecoratorRouter.routes())
-  .use(KoaDecoratorRouter.allowedMethods());
+app.use(KoaDecoratorRouter.routes()).use(KoaDecoratorRouter.allowedMethods());
 ```
